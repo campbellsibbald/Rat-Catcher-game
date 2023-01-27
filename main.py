@@ -45,7 +45,52 @@ pygame.display.set_icon(icon)
 # clock for setting frames
 clock = pygame.time.Clock()
 
-#class Entitity():
+class TileType(Enum):
+    '''
+    enumerator class for tile types, just makes the tile types more readable
+    e.g. TileType.GRASS for grass instead of the integer 0
+    '''
+    GRASS = 0
+    WATER = 1
+    WOOD = 2
+
+class Entity:
+    def __init__(self, name : str, description : str, x : int, y : int, w : int, h : int, image : str, colour : list, screen) -> None:
+        self.name = name
+        self.description = description
+        self.x = x
+        self.y = y
+        self.pos = [self.x, self.y]
+        self.width = w
+        self.height = h
+        self.screen = screen
+        self.image = image
+        self.colour = colour
+        self.selected = False
+        self.rect = pygame.Rect(x, y, w, h)
+        self.im = pygame.transform.scale(pygame.image.load(self.image), (tile_size, tile_size))
+        self.r = pygame.draw.rect(self.screen, self.colour, self.rect)
+    def draw(self) -> None:
+        screen.blit(self.im, self.r)
+    def interact(self) -> None:
+        print(f"You interact with {self.name}. {self.description}")
+        if self.selected:
+            self.set_image("Primalist_Sprite.png")
+            self.selected = False    
+        else:
+            self.set_image("cat.png")
+            self.selected = True
+    def get_self(self):
+        return self
+    def set_image(self, image : str) -> None:
+        self.image = image
+        self.im = pygame.transform.scale(pygame.image.load(self.image), (tile_size, tile_size))
+    def handle_events(self, event):
+        # finds which tile the click was in and calls on rectangle.interact()
+        for entity in self.entities:
+            if entity.rect.collidepoint(event.pos):
+                entity.interact()
+
 
 # a class for creating the grid of the map
 class Grid:
@@ -76,7 +121,7 @@ class Grid:
             if rectangle.rect.collidepoint(event.pos):
                 rectangle.interact()
 # a class mainly for creating tiles on the grid
-class Rectangle:
+class Rectangle():
     # initilize function
     def __init__(self, name : str, description, x, y, width, height, color, screen) -> None:
         self.name = name
@@ -91,6 +136,9 @@ class Rectangle:
     def draw(self) -> None:
         pygame.draw.rect(self.screen, self.color, self.rect)
 
+class RatCatcher:
+    def __init__(self) -> None:
+        pass
 # initialize grid
 g = Grid(12, 8, SIZE[0], SIZE[1], screen)
 
@@ -100,37 +148,29 @@ for i in range(TILES[0]):
         rect = Rectangle(f"{i},{j}", "", j*tile_size + x_offset, i*tile_size, tile_size, tile_size, (122, 135, 146), screen)
         g.add_rectangle(i, j, rect)
 
-#images fpr each tile
-grass_tile = pygame.image.load("grass_tile.jpg")
-grass_tile = pygame.transform.scale(grass_tile, (tile_size, tile_size))
-water_tile = pygame.image.load("water_tile.jpg")
-water_tile = pygame.transform.scale(water_tile, (tile_size, tile_size))
-wood_tile = pygame.image.load("wood_tile.jpg")
-wood_tile = pygame.transform.scale(wood_tile, (tile_size, tile_size))
+# creating the tile dictionary to tie a tile type to an image
+tile_dict = {}
+tile_dict[TileType.GRASS] = pygame.transform.scale(pygame.image.load("grass_tile.jpg").convert(), (tile_size, tile_size))
+tile_dict[TileType.WATER] = pygame.transform.scale(pygame.image.load("water_tile.jpg").convert(), (tile_size, tile_size))
+tile_dict[TileType.WOOD] = pygame.transform.scale(pygame.image.load("wood_tile.jpg").convert(), (tile_size, tile_size))
 
 #create the player
-player = pygame.image.load("Primalist_Sprite.png")
-player = pygame.transform.scale(player, (tile_size, tile_size))
-playerrect = Rectangle("PlayerCharacter1", "look at lil guy go", (player_x * tile_size) + x_offset, 
-            (player_y * tile_size), tile_size, tile_size, (122, 135, 146), screen)
-g.add_rectangle(0, 0, playerrect)
-
-
+player = Entity("Primalist", "Fire person", (player_x * tile_size) + x_offset, 
+                        (player_y * tile_size), tile_size, tile_size, "Primalist_Sprite.png", (255, 255, 255), screen)
+g.add_rectangle(0,0, player)
 
 #main loop
 while True:
     for event in pygame.event.get():
-        print(event)
+        #print(event)
         if event.type == pygame.QUIT: sys.exit()
         # detects if the user has clicked
         elif event.type == pygame.MOUSEBUTTONDOWN:
             g.handle_events(event)
+            
         elif event.type == pygame.KEYDOWN and event.key == 27:
             sys.exit()
 
-    # the background
-    screen.fill(background)
-    
     # creates the grid
     g.draw_grid()
 
@@ -139,18 +179,19 @@ while True:
         for col in range(TILES[1]):
             # draws the water tiles
             if (col >= 8 - row and col <= 10 - row):
-                screen.blit(water_tile, (col*tile_size + x_offset, row*tile_size))
+                screen.blit(tile_dict[TileType.WATER], (col*tile_size + x_offset, row*tile_size))
             # draws the grass tiles
             else:
-                screen.blit(grass_tile, (col*tile_size + x_offset, row*tile_size))
+                screen.blit(tile_dict[TileType.GRASS], (col*tile_size + x_offset, row*tile_size))
             # draws the wood tiles
             if ((row == 4 and (col >= 3 and col <= 5)) or (row == 5 and (col >= 4 and col <= 6))):
-                screen.blit(wood_tile, (col*tile_size + x_offset, row*tile_size))
+                screen.blit(tile_dict[TileType.WOOD], (col*tile_size + x_offset, row*tile_size))
             rect = pygame.Rect(col*tile_size + x_offset, row*tile_size, tile_size, tile_size)
             pygame.draw.rect(screen, (0,0,0), rect, 1)
             
     # draws the playerA
-    screen.blit(player, playerrect)
+    #screen.blit(player, playerrect)
+    player.draw()
 
     # updates the parts of the screen that need to be
     pygame.display.flip()
