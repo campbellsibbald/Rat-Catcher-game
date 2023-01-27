@@ -1,6 +1,26 @@
 import pygame, sys
 pygame.init()
+import random
+from enum import Enum
 
+'''
+-> Make a grid system
+    -> Scalable to sreen
+    -> Set grid size
+    -> Add black bars depending on screen size
+
+-> Make a User Interface
+    -> Buttons of specific action type
+        -> Buttons change UI to display all possible actions of that action type
+        -> When hovered display a description of what hat ction will do
+    -> Display hero icons on the side
+        -> Health Points and Actions
+    -> Turn order is displayed below hero icons
+        -> current turn and who's next
+        
+-> logs
+    -> logs of what has happend during combat
+'''
 
 # screen size
 DISPLAY = pygame.display.Info()
@@ -25,6 +45,7 @@ pygame.display.set_icon(icon)
 # clock for setting frames
 clock = pygame.time.Clock()
 
+#class Entitity():
 
 # a class for creating the grid of the map
 class Grid:
