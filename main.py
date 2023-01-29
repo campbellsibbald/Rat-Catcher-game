@@ -4,10 +4,7 @@ import random
 from enum import Enum
 
 '''
--> Make a grid system
-    -> Scalable to sreen
-    -> Set grid size
-    -> Add black bars depending on screen size
+-> Clean up everything
 
 -> Make a User Interface
     -> Buttons of specific action type
@@ -71,15 +68,19 @@ class Entity:
         self.im = pygame.transform.scale(pygame.image.load(self.image), (tile_size, tile_size))
         self.r = pygame.draw.rect(self.screen, self.colour, self.rect)
     def draw(self) -> None:
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.r = pygame.draw.rect(self.screen, self.colour, self.rect, 1)
         screen.blit(self.im, self.r)
     def interact(self) -> None:
         print(f"You interact with {self.name}. {self.description}")
         if self.selected:
             self.set_image("Primalist_Sprite.png")
             self.selected = False    
+            self.players[self.name] = self.selected
         else:
             self.set_image("cat.png")
             self.selected = True
+            self.players[self.name] = self.selected
     def get_self(self):
         return self
     def set_image(self, image : str) -> None:
@@ -90,6 +91,23 @@ class Entity:
         for entity in self.entities:
             if entity.rect.collidepoint(event.pos):
                 entity.interact()
+
+class Player(Entity):
+    def __init__(self, name : str, description : str, x : int, y : int, w : int, h : int, image : str, colour : list, screen):
+        super().__init__(name, description, x , y , w, h, image, colour, screen)
+        self.selected = False
+        self.players = {}
+    def add_player(self):
+        self.players[self.name] = self.selected
+    def get_player(self):
+        return self.name
+    def move(self):
+        print(self.selected)
+        return player1.players[player1.get_player()], self
+    def change_x_y(self,name, x, y):
+        print(name)
+        name.x = x
+        name.y = y
 
 
 # a class for creating the grid of the map
@@ -126,11 +144,17 @@ class Rectangle():
     def __init__(self, name : str, description, x, y, width, height, color, screen) -> None:
         self.name = name
         self.description = description
+        self.x = x
+        self.y = y
         self.rect = pygame.Rect(x, y, width, height)
         self.color = color
         self.screen = screen
     # function for when a tile is clicked
     def interact(self) -> None:
+        a,b = player1.move()
+        print(a)
+        if (a):
+            player1.change_x_y(b,self.x,self.y)
         print(f"You interact with {self.name}. {self.description}")
     # function for drawing the rectangle
     def draw(self) -> None:
@@ -155,9 +179,10 @@ tile_dict[TileType.WATER] = pygame.transform.scale(pygame.image.load("water_tile
 tile_dict[TileType.WOOD] = pygame.transform.scale(pygame.image.load("wood_tile.jpg").convert(), (tile_size, tile_size))
 
 #create the player
-player = Entity("Primalist", "Fire person", (player_x * tile_size) + x_offset, 
-                        (player_y * tile_size), tile_size, tile_size, "Primalist_Sprite.png", (255, 255, 255), screen)
-g.add_rectangle(0,0, player)
+player1 = Player("Primalist", "Fire person", (player_x * tile_size) + x_offset, 
+                        (player_y * tile_size), tile_size, tile_size, "Primalist_Sprite.png", (0, 0, 0), screen)
+g.add_rectangle(0,0, player1)
+player1.add_player()
 
 #main loop
 while True:
@@ -191,7 +216,7 @@ while True:
             
     # draws the playerA
     #screen.blit(player, playerrect)
-    player.draw()
+    player1.draw()
 
     # updates the parts of the screen that need to be
     pygame.display.flip()
