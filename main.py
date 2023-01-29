@@ -6,6 +6,9 @@ from enum import Enum
 '''
 -> Clean up everything
 
+-> Make subclass classes
+    -> actions, abilities, passives
+    -> icons and sprites
 -> Make a User Interface
     -> Buttons of specific action type
         -> Buttons change UI to display all possible actions of that action type
@@ -81,8 +84,6 @@ class Entity:
             self.set_image("cat.png")
             self.selected = True
             self.players[self.name] = self.selected
-    def get_self(self):
-        return self
     def set_image(self, image : str) -> None:
         self.image = image
         self.im = pygame.transform.scale(pygame.image.load(self.image), (tile_size, tile_size))
